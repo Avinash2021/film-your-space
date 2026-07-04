@@ -87,7 +87,7 @@ struct ARCameraView: UIViewRepresentable {
             guard let root = studioRoot else { return }
 
             let signature = sceneState.humans
-                .map { "\($0.id)-\($0.position)-\($0.rotationY)" }
+                .map { "\($0.id)-\($0.position)-\($0.rotationY)-\($0.name)-\($0.pose.rawValue)" }
                 .joined(separator: "|")
             guard signature != lastHumanSignature else { return }
             lastHumanSignature = signature

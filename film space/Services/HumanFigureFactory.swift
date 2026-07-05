@@ -11,24 +11,35 @@ enum HumanFigureFactory {
     private static let clothingColor = UIColor(red: 0.35, green: 0.38, blue: 0.45, alpha: 1)
 
     // Standing baseline layout (meters), feet flat on the floor at y = 0.
+    // Proportions follow the classic ~8-heads-tall figure-drawing canon (head
+    // unit ≈ 0.22 m for this figure's scale): upper arm ≈ 1.5 head units,
+    // forearm ≈ 1.3, thigh/shin ≈ 2 each — rather than the old arbitrary
+    // block lengths, which read as noticeably long/gangly.
     private static let headRadius: Float = 0.11
     private static let headYLocal: Float = 0.72 // relative to the pelvis/torso pivot
-    private static let torsoSize: SIMD3<Float> = [0.36, 0.48, 0.18]
+    private static let torsoHeight: Float = 0.50
+    private static let torsoRadius: Float = 0.15
     private static let torsoYLocal: Float = 0.32
-    private static let upperArmSize: SIMD3<Float> = [0.11, 0.38, 0.11]
-    private static let forearmSize: SIMD3<Float> = [0.09, 0.34, 0.09]
-    private static let upperArmLength: Float = 0.38
-    private static let forearmLength: Float = 0.34
-    private static let shoulderX: Float = 0.24
+    private static let upperArmLength: Float = 0.33
+    private static let upperArmRadius: Float = 0.055
+    private static let forearmLength: Float = 0.29
+    private static let forearmRadius: Float = 0.045
+    private static let shoulderX: Float = 0.22
     private static let shoulderYLocal: Float = 0.38
+    private static let shoulderJointRadius: Float = 0.065
+    private static let elbowJointRadius: Float = 0.05
     fileprivate static let idleShoulderSplay: Float = 0.35
     fileprivate static let idleElbowSplay: Float = 0.15
 
     private static let hipX: Float = 0.11
     private static let hipHeightStanding: Float = 0.90
     private static let thighLength: Float = 0.44
-    private static let shinLength: Float = 0.38
-    private static let legThickness: Float = 0.13
+    private static let thighRadius: Float = 0.09
+    private static let shinLength: Float = 0.42
+    private static let shinRadius: Float = 0.07
+    private static let hipJointRadius: Float = 0.10
+    private static let kneeJointRadius: Float = 0.085
+    private static let ankleJointRadius: Float = 0.06
     private static let footSize: SIMD3<Float> = [0.14, 0.08, 0.24]
     private static let footOffset: SIMD3<Float> = [0, -0.04, 0.02]
 
@@ -81,7 +92,7 @@ enum HumanFigureFactory {
         head.position = [0, headYLocal, 0]
         torsoPivot.addChild(head)
 
-        let torso = ModelEntity(mesh: .generateBox(size: torsoSize), materials: [clothing])
+        let torso = ModelEntity(mesh: .generateCylinder(height: torsoHeight, radius: torsoRadius), materials: [clothing])
         torso.position = [0, torsoYLocal, 0]
         torsoPivot.addChild(torso)
 
@@ -108,6 +119,10 @@ enum HumanFigureFactory {
         return root
     }
 
+    // Ball joints at the shoulder and elbow (a classic articulated-mannequin
+    // touch) always fully cover the seam between the two rotating cylinders,
+    // whatever angle they're bent to — unlike the old boxes, which visibly
+    // gapped or intersected at extreme joint rotations.
     private static func addArm(
         to torsoPivot: Entity,
         side: Float,
@@ -121,7 +136,13 @@ enum HumanFigureFactory {
             * simd_quatf(angle: arm.shoulderForward, axis: [1, 0, 0])
         torsoPivot.addChild(shoulder)
 
-        let upperArm = ModelEntity(mesh: .generateBox(size: upperArmSize), materials: [clothing])
+        let shoulderBall = ModelEntity(mesh: .generateSphere(radius: shoulderJointRadius), materials: [clothing])
+        shoulder.addChild(shoulderBall)
+
+        let upperArm = ModelEntity(
+            mesh: .generateCylinder(height: upperArmLength, radius: upperArmRadius),
+            materials: [clothing]
+        )
         upperArm.position = [0, -upperArmLength / 2, 0]
         shoulder.addChild(upperArm)
 
@@ -131,11 +152,20 @@ enum HumanFigureFactory {
             * simd_quatf(angle: arm.elbow, axis: [1, 0, 0])
         shoulder.addChild(elbow)
 
-        let forearm = ModelEntity(mesh: .generateBox(size: forearmSize), materials: [skin])
+        let elbowBall = ModelEntity(mesh: .generateSphere(radius: elbowJointRadius), materials: [skin])
+        elbow.addChild(elbowBall)
+
+        let forearm = ModelEntity(
+            mesh: .generateCylinder(height: forearmLength, radius: forearmRadius),
+            materials: [skin]
+        )
         forearm.position = [0, -forearmLength / 2, 0]
         elbow.addChild(forearm)
     }
 
+    // Ball joints at the hip, knee, and ankle cover the seam between rotating
+    // cylinders at any bend angle, so toggling between standing/sitting/kneeling
+    // deforms cleanly with no gap or clipping at the pivots.
     private static func addLeg(
         to root: Entity,
         side: Float,
@@ -148,7 +178,13 @@ enum HumanFigureFactory {
         hip.orientation = simd_quatf(angle: leg.hip, axis: [1, 0, 0])
         root.addChild(hip)
 
-        let thigh = ModelEntity(mesh: .generateBox(size: [legThickness, thighLength, legThickness]), materials: [clothing])
+        let hipBall = ModelEntity(mesh: .generateSphere(radius: hipJointRadius), materials: [clothing])
+        hip.addChild(hipBall)
+
+        let thigh = ModelEntity(
+            mesh: .generateCylinder(height: thighLength, radius: thighRadius),
+            materials: [clothing]
+        )
         thigh.position = [0, -thighLength / 2, 0]
         hip.addChild(thigh)
 
@@ -157,7 +193,13 @@ enum HumanFigureFactory {
         knee.orientation = simd_quatf(angle: leg.knee, axis: [1, 0, 0])
         hip.addChild(knee)
 
-        let shin = ModelEntity(mesh: .generateBox(size: [legThickness, shinLength, legThickness]), materials: [clothing])
+        let kneeBall = ModelEntity(mesh: .generateSphere(radius: kneeJointRadius), materials: [clothing])
+        knee.addChild(kneeBall)
+
+        let shin = ModelEntity(
+            mesh: .generateCylinder(height: shinLength, radius: shinRadius),
+            materials: [clothing]
+        )
         shin.position = [0, -shinLength / 2, 0]
         knee.addChild(shin)
 
@@ -165,6 +207,9 @@ enum HumanFigureFactory {
         ankle.position = [0, -shinLength, 0]
         ankle.orientation = simd_quatf(angle: leg.ankle, axis: [1, 0, 0])
         knee.addChild(ankle)
+
+        let ankleBall = ModelEntity(mesh: .generateSphere(radius: ankleJointRadius), materials: [skin])
+        ankle.addChild(ankleBall)
 
         let foot = ModelEntity(mesh: .generateBox(size: footSize), materials: [skin])
         foot.position = footOffset

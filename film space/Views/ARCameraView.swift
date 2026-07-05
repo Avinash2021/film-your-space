@@ -86,8 +86,12 @@ struct ARCameraView: UIViewRepresentable {
         func rebuildScene() {
             guard let root = studioRoot else { return }
 
+            // RoomEnvironmentBuilder dedups internally against the layout it
+            // last built, so calling this unconditionally is cheap.
+            RoomEnvironmentBuilder.sync(layout: sceneState.roomLayout, into: root)
+
             let signature = sceneState.humans
-                .map { "\($0.id)-\($0.position)-\($0.rotationY)-\($0.name)-\($0.pose.rawValue)" }
+                .map { "\($0.id)-\($0.position)-\($0.rotationY)-\($0.name)-\($0.pose.rawValue)-\($0.tiltPitch)-\($0.tiltRoll)-\($0.liftHeight)" }
                 .joined(separator: "|")
             guard signature != lastHumanSignature else { return }
             lastHumanSignature = signature

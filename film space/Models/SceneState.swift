@@ -32,15 +32,53 @@ enum FocalLength: Float, CaseIterable {
     }
 }
 
+enum CharacterPose: String, CaseIterable, Codable {
+    case standing = "Standing"
+    case sitting = "Sitting"
+    case kneeling = "Kneeling"
+    case lying = "Lying"
+    case crouch = "Crouch"
+    case lean = "Lean"
+    case fall = "Fall"
+    case stance = "Stance"
+    case sprint = "Sprint"
+    case walk = "Walk"
+
+    var systemImage: String {
+        switch self {
+        case .standing: return "figure.stand"
+        case .sitting: return "figure.seated.side"
+        case .kneeling: return "figure.cooldown"
+        case .lying: return "bed.double.fill"
+        case .crouch: return "figure.strengthtraining.functional"
+        case .lean: return "figure.mixed.cardio"
+        case .fall: return "figure.fall"
+        case .stance: return "figure.boxing"
+        case .sprint: return "figure.run"
+        case .walk: return "figure.walk"
+        }
+    }
+}
+
 struct HumanPlacement: Identifiable, Equatable {
     let id: UUID
     var position: SIMD3<Float>
     var rotationY: Float
+    var name: String
+    var pose: CharacterPose
 
-    init(id: UUID = UUID(), position: SIMD3<Float> = [0, 0, 0], rotationY: Float = 0) {
+    init(
+        id: UUID = UUID(),
+        position: SIMD3<Float> = [0, 0, 0],
+        rotationY: Float = 0,
+        name: String = "",
+        pose: CharacterPose = .standing
+    ) {
         self.id = id
         self.position = position
         self.rotationY = rotationY
+        self.name = name
+        self.pose = pose
     }
 }
 
@@ -63,9 +101,20 @@ final class SceneState {
 
     func addHuman() {
         let offset = Float(humans.count) * 0.6
-        let placement = HumanPlacement(position: [offset, 0, 0])
+        let name = "Person \(humans.count + 1)"
+        let placement = HumanPlacement(position: [offset, 0, 0], name: name)
         humans.append(placement)
         selectedHumanID = placement.id
+    }
+
+    func updateHumanName(id: UUID, name: String) {
+        guard let index = humans.firstIndex(where: { $0.id == id }) else { return }
+        humans[index].name = name
+    }
+
+    func updateHumanPose(id: UUID, pose: CharacterPose) {
+        guard let index = humans.firstIndex(where: { $0.id == id }) else { return }
+        humans[index].pose = pose
     }
 
     func deleteSelectedHuman() {

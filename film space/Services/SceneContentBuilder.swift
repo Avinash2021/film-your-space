@@ -12,19 +12,32 @@ enum SceneContentBuilder {
         selectedID: UUID?,
         into root: Entity
     ) {
-        let rootPositions = syncFigures(placements: placements, selectedID: selectedID, into: root)
-        syncNameTags(placements: placements, rootPositions: rootPositions, into: root)
+        let transforms = syncFigures(placements: placements, selectedID: selectedID, into: root)
+        syncNameTags(placements: placements, transforms: transforms, into: root)
     }
 
-    // Returns each figure's final root position (after floor-grounding), keyed by
-    // placement id, so the name-tag pass can reuse it without recomputing bounds.
+    // Each figure is a two-level rig:
+    //   HumanHinge (tagged, tap-selectable via its child's collision)
+    //     └─ HumanFigure (the actual mesh, built by HumanFigureFactory)
+    //
+    // The hinge sits at ground level plus any user-applied lift, and carries the
+    // yaw and the sway (pitch/roll) trim — so sway always pivots from a fixed
+    // point at the character's feet, the way leaning over a planted foot
+    // actually works, rather than from wherever the mesh's own origin happens to
+    // sit. The figure underneath only carries the pose's own recline (lying) and
+    // is grounded against that alone.
+    private struct FigureTransform {
+        var hingePosition: SIMD3<Float>
+        var figureLocalOffset: SIMD3<Float>
+    }
+
     private static func syncFigures(
         placements: [HumanPlacement],
         selectedID: UUID?,
         into root: Entity
-    ) -> [UUID: SIMD3<Float>] {
+    ) -> [UUID: FigureTransform] {
         let existing = Dictionary(uniqueKeysWithValues: root.children.compactMap { child -> (UUID, Entity)? in
-            guard child.name == "HumanFigure", let tag = child.components[HumanTagComponent.self] else { return nil }
+            guard child.name == "HumanHinge", let tag = child.components[HumanTagComponent.self] else { return nil }
             return (tag.id, child)
         })
 
@@ -33,64 +46,99 @@ enum SceneContentBuilder {
             entity.removeFromParent()
         }
 
-        var rootPositions: [UUID: SIMD3<Float>] = [:]
+        let floorY = floorHeight(in: root)
+        var transforms: [UUID: FigureTransform] = [:]
 
         for placement in placements {
             let isSelected = placement.id == selectedID
-            let entity: Entity
-            if let existingEntity = existing[placement.id] {
-                let needsRebuild = existingEntity.components[HumanSelectionComponent.self]?.isSelected != isSelected
-                    || existingEntity.components[HumanPoseComponent.self]?.pose != placement.pose
+            let hinge: Entity
+            if let existingHinge = existing[placement.id] {
+                let needsRebuild = existingHinge.components[HumanSelectionComponent.self]?.isSelected != isSelected
+                    || existingHinge.components[HumanPoseComponent.self]?.pose != placement.pose
                 if needsRebuild {
-                    existingEntity.removeFromParent()
-                    entity = makeFigure(for: placement, isSelected: isSelected)
-                    root.addChild(entity)
+                    existingHinge.removeFromParent()
+                    hinge = makeHinge(for: placement, isSelected: isSelected)
+                    root.addChild(hinge)
                 } else {
-                    entity = existingEntity
-                    applyTransform(to: entity, placement: placement)
+                    hinge = existingHinge
                 }
             } else {
-                entity = makeFigure(for: placement, isSelected: isSelected)
-                root.addChild(entity)
+                hinge = makeHinge(for: placement, isSelected: isSelected)
+                root.addChild(hinge)
             }
-            rootPositions[placement.id] = entity.position
+
+            transforms[placement.id] = applyTransform(to: hinge, placement: placement, floorHeight: floorY)
         }
 
-        return rootPositions
+        return transforms
     }
 
-    private static func makeFigure(for placement: HumanPlacement, isSelected: Bool) -> Entity {
-        let entity = HumanFigureFactory.makeHumanFigure(isSelected: isSelected, pose: placement.pose)
-        entity.components.set(HumanTagComponent(id: placement.id))
-        entity.components.set(HumanSelectionComponent(isSelected: isSelected))
-        entity.components.set(HumanPoseComponent(pose: placement.pose))
-        applyTransform(to: entity, placement: placement)
-        return entity
+    /// The active floor's top-surface height (world Y), looked up from the
+    /// entity RoomEnvironmentBuilder tags in either the default grid or a
+    /// generated room — rather than assuming the floor always sits at world
+    /// Y=0. Falls back to 0 if no floor reference is found (e.g. the entity
+    /// tree hasn't finished building yet).
+    private static func floorHeight(in root: Entity) -> Float {
+        guard let floor = root.findEntity(named: RoomEnvironmentBuilder.floorReferenceName) else { return 0 }
+        return floor.position(relativeTo: root).y
     }
 
-    // Grounds the figure on the floor for *any* pose, then applies the placement's
-    // yaw and (for lying) the recline tilt on top.
-    //
-    // `entity.visualBounds(relativeTo: nil)` measures bounds relative to the entity
-    // itself, i.e. it reflects every internal joint rotation (torso pitch/roll, leg
-    // stagger, limb bends) but not the entity's own root-level tilt. So for lying —
-    // the only pose that rotates the root itself — the lowest point has to be found
-    // by rotating the local bounding box's corners by that tilt by hand.
-    private static func applyTransform(to entity: Entity, placement: HumanPlacement) {
+    private static func makeHinge(for placement: HumanPlacement, isSelected: Bool) -> Entity {
+        let hinge = Entity()
+        hinge.name = "HumanHinge"
+        hinge.components.set(HumanTagComponent(id: placement.id))
+        hinge.components.set(HumanSelectionComponent(isSelected: isSelected))
+        hinge.components.set(HumanPoseComponent(pose: placement.pose))
+
+        let figure = HumanFigureFactory.makeHumanFigure(isSelected: isSelected, pose: placement.pose)
+        hinge.addChild(figure)
+
+        return hinge
+    }
+
+    /// The sway (pitch/roll) trim, independent of yaw and of pose. This never
+    /// touches the environment sphere, which lives in an entirely separate scene
+    /// (LocationPreviewView) with no shared entity hierarchy.
+    private static func swayRotation(for placement: HumanPlacement) -> simd_quatf {
+        simd_quatf(angle: placement.tiltRoll, axis: [0, 0, 1])
+            * simd_quatf(angle: placement.tiltPitch, axis: [1, 0, 0])
+    }
+
+    // `floorHeight` anchors the hinge's resting height to the actual floor
+    // entity (see `floorHeight(in:)`) rather than assuming world Y=0 — so a
+    // character stays correctly planted on top of the floor's real surface
+    // even if a generated room's floor isn't exactly at the world origin.
+    @discardableResult
+    private static func applyTransform(to hinge: Entity, placement: HumanPlacement, floorHeight: Float) -> FigureTransform {
         let yaw = simd_quatf(angle: placement.rotationY, axis: [0, 1, 0])
-        let tilt = HumanFigureFactory.rootTilt(for: placement.pose)
+        let sway = swayRotation(for: placement)
 
-        let localBounds = entity.visualBounds(relativeTo: nil)
-        let lowestY: Float
-        if placement.pose == .lying {
-            lowestY = corners(of: localBounds).map { tilt.act($0).y }.min() ?? localBounds.min.y
-        } else {
-            lowestY = localBounds.min.y
+        hinge.orientation = yaw * sway
+        hinge.position = [
+            placement.position.x,
+            floorHeight + placement.position.y + placement.liftHeight,
+            placement.position.z,
+        ]
+
+        guard let figure = hinge.children.first(where: { $0.name == "HumanFigure" }) else {
+            return FigureTransform(hingePosition: hinge.position, figureLocalOffset: .zero)
         }
 
-        let groundedY = placement.position.y - lowestY + HumanFigureFactory.extraLift(for: placement.pose)
-        entity.orientation = yaw * tilt
-        entity.position = [placement.position.x, groundedY, placement.position.z]
+        // `figure.visualBounds(relativeTo: nil)` measures bounds relative to the
+        // figure itself, reflecting every internal joint rotation (torso
+        // pitch/roll, leg stagger, limb bends) but not the figure's own
+        // root-level recline. Lying is the only pose that rotates the figure
+        // root, so its lowest point is found by rotating the local bounding
+        // box's corners by that tilt by hand.
+        let poseTilt = HumanFigureFactory.rootTilt(for: placement.pose)
+        let localBounds = figure.visualBounds(relativeTo: nil)
+        let lowestY = corners(of: localBounds).map { poseTilt.act($0).y }.min() ?? localBounds.min.y
+
+        let figureLocalOffset = SIMD3<Float>(0, -lowestY + HumanFigureFactory.extraLift(for: placement.pose), 0)
+        figure.orientation = poseTilt
+        figure.position = figureLocalOffset
+
+        return FigureTransform(hingePosition: hinge.position, figureLocalOffset: figureLocalOffset)
     }
 
     private static func corners(of bounds: BoundingBox) -> [SIMD3<Float>] {
@@ -102,12 +150,12 @@ enum SceneContentBuilder {
         ]
     }
 
-    // Name tags are independent, unrotated top-level entities (not children of the
-    // figure), positioned directly above the head using the same pose math the
-    // figure itself was built from, so a tilted/staggered pose can't drag it off.
+    // Name tags are independent, unrotated top-level entities (not children of
+    // the hinge), positioned directly above the head using the same transform
+    // the figure itself was built from, so sway/lift/pose can't drag it off.
     private static func syncNameTags(
         placements: [HumanPlacement],
-        rootPositions: [UUID: SIMD3<Float>],
+        transforms: [UUID: FigureTransform],
         into root: Entity
     ) {
         let existing = Dictionary(uniqueKeysWithValues: root.children.compactMap { child -> (UUID, Entity)? in
@@ -121,8 +169,8 @@ enum SceneContentBuilder {
         }
 
         for placement in placements {
-            guard let rootPosition = rootPositions[placement.id] else { continue }
-            let position = headAnchorPosition(for: placement, rootPosition: rootPosition)
+            guard let transform = transforms[placement.id] else { continue }
+            let position = headAnchorPosition(for: placement, transform: transform)
 
             if let entity = existing[placement.id] {
                 entity.position = position
@@ -135,11 +183,14 @@ enum SceneContentBuilder {
         }
     }
 
-    private static func headAnchorPosition(for placement: HumanPlacement, rootPosition: SIMD3<Float>) -> SIMD3<Float> {
+    private static func headAnchorPosition(for placement: HumanPlacement, transform: FigureTransform) -> SIMD3<Float> {
         let yaw = simd_quatf(angle: placement.rotationY, axis: [0, 1, 0])
-        let tilt = HumanFigureFactory.rootTilt(for: placement.pose)
+        let sway = swayRotation(for: placement)
+        let poseTilt = HumanFigureFactory.rootTilt(for: placement.pose)
         let headLocal = HumanFigureFactory.headLocalPosition(for: placement.pose)
-        let headWorld = rootPosition + yaw.act(tilt.act(headLocal))
+
+        let headInHingeSpace = transform.figureLocalOffset + poseTilt.act(headLocal)
+        let headWorld = transform.hingePosition + (yaw * sway).act(headInHingeSpace)
         return headWorld + [0, HumanFigureFactory.nameTagOffsetAboveHead, 0]
     }
 

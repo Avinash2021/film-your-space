@@ -23,13 +23,13 @@ struct StudioToolbar: View {
         let noSelection = sceneState.selectedHumanID == nil
         let noLock = cameraController.lockedTransform == nil
 
-        HStack(spacing: 0) {
-            // Left group — trailing aligned. Edit: rotate/add/delete bodies.
-            // Camera: focal-length toggle.
+        HStack(spacing: 24) {
+            // Left group — trailing aligned. Character: rotate/add/delete bodies.
+            // Motion: focal-length toggle.
             HStack(spacing: 16) {
                 Spacer(minLength: 0)
 
-                if sceneState.mode == .edit {
+                if sceneState.mode == .character {
                     holdButton(systemName: "arrow.counterclockwise", disabled: noSelection) { active in
                         rotateDirection = active ? 1 : 0
                     }
@@ -53,13 +53,9 @@ struct StudioToolbar: View {
             }
             .frame(maxWidth: .infinity)
 
-            modeToggle
-                .fixedSize()
-                .padding(.horizontal, 16)
-
-            // Right group: movement (edit only) + lock/return (both modes).
+            // Right group: movement (character only) + lock/return (both).
             HStack(spacing: 16) {
-                if sceneState.mode == .edit {
+                if sceneState.mode == .character {
                     VStack(spacing: 12) {
                         holdButton(systemName: "arrow.up") { active in
                             verticalDirection = active ? 1 : 0
@@ -74,7 +70,7 @@ struct StudioToolbar: View {
                 }
 
                 VStack(spacing: 12) {
-                    if sceneState.mode == .camera {
+                    if sceneState.mode == .motion {
                         circleButton(systemName: "figure.stand.line.dotted.figure.stand") {
                             cameraController.pendingShoulderPlacement = true
                         }
@@ -86,7 +82,7 @@ struct StudioToolbar: View {
                 }
 
                 VStack(spacing: 12) {
-                    if sceneState.mode == .camera {
+                    if sceneState.mode == .motion {
                         recordButton
                     }
 
@@ -115,7 +111,7 @@ struct StudioToolbar: View {
     }
 
     private func lockCamera() {
-        if sceneState.mode == .camera, let live = cameraController.liveCameraTransform {
+        if sceneState.mode == .motion, let live = cameraController.liveCameraTransform {
             cameraController.lockedTransform = live
         } else {
             cameraController.lockEditPose()
@@ -123,7 +119,7 @@ struct StudioToolbar: View {
     }
 
     private func returnToLock() {
-        if sceneState.mode == .edit {
+        if sceneState.mode == .character {
             cameraController.returnToLockedTransform()
         } else {
             cameraController.pendingRecenter = true
@@ -174,33 +170,6 @@ struct StudioToolbar: View {
         .buttonStyle(.plain)
     }
 
-    private var modeToggle: some View {
-        HStack(spacing: 4) {
-            ForEach(AppMode.allCases, id: \.self) { mode in
-                Button {
-                    sceneState.mode = mode
-                } label: {
-                    Text(mode.rawValue)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(sceneState.mode == mode ? .black : .white)
-                        .padding(.vertical, 10)
-                        .padding(.horizontal, 20)
-                        .background {
-                            if sceneState.mode == mode {
-                                Capsule().fill(.white)
-                            }
-                        }
-                        .contentShape(Capsule())
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(4)
-        .background(.ultraThinMaterial, in: Capsule())
-        .overlay(Capsule().strokeBorder(.white.opacity(0.15)))
-        .shadow(color: .black.opacity(0.25), radius: 10, y: 4)
-    }
-
     private func circleButton(
         systemName: String,
         tint: Color = .white,
@@ -216,6 +185,10 @@ struct StudioToolbar: View {
     }
 
     // Circular button that reports press/release for continuous (hold) actions.
+    // `.highPriorityGesture` rather than `.gesture`: this toolbar is an overlay
+    // directly on top of the RealityView, which owns full-screen drag gestures
+    // of its own (orbit, select, drag-to-move) — without priority, touches here
+    // can be captured by the 3D view underneath instead of the button.
     private func holdButton(
         systemName: String,
         tint: Color = .white,
@@ -225,7 +198,7 @@ struct StudioToolbar: View {
         iconCircle(systemName: systemName, tint: tint)
             .opacity(disabled ? 0.4 : 1)
             .contentShape(Circle())
-            .gesture(
+            .highPriorityGesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { _ in if !disabled { setActive(true) } }
                     .onEnded { _ in setActive(false) }
@@ -267,7 +240,7 @@ private struct Joystick: View {
         }
         .frame(width: size, height: size)
         .contentShape(Circle())
-        .gesture(
+        .highPriorityGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { gesture in
                     let maxRadius = (size - thumbSize) / 2

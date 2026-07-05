@@ -21,6 +21,7 @@ struct VirtualStudioView: View {
         // humans are added/removed/selected.
         let humans = sceneState.humans
         let selectedID = sceneState.selectedHumanID
+        let roomLayout = sceneState.roomLayout
 
         RealityView { content in
             content.add(cameraController.makeCameraEntity())
@@ -29,6 +30,7 @@ struct VirtualStudioView: View {
             content.add(root)
             studioRoot = root
 
+            RoomEnvironmentBuilder.sync(layout: roomLayout, into: root)
             SceneContentBuilder.syncHumans(
                 placements: humans,
                 selectedID: selectedID,
@@ -36,6 +38,7 @@ struct VirtualStudioView: View {
             )
         } update: { _ in
             guard let root = studioRoot else { return }
+            RoomEnvironmentBuilder.sync(layout: roomLayout, into: root)
             SceneContentBuilder.syncHumans(
                 placements: humans,
                 selectedID: selectedID,
@@ -72,8 +75,11 @@ struct VirtualStudioView: View {
                     var offset = right * Float(value.translation.width) * moveScale
                     offset += forward * Float(value.translation.height) * moveScale
 
+                    // Horizontal drag only — preserve whatever height (above
+                    // the floor reference) the character already had, rather
+                    // than forcing it back to a hardcoded world-origin value.
                     var newPosition = start + offset
-                    newPosition.y = 0
+                    newPosition.y = start.y
                     sceneState.updateHumanPosition(id: id, position: newPosition)
                 } else {
                     let deltaAzimuth = Float(delta.width) * 0.005
@@ -82,6 +88,13 @@ struct VirtualStudioView: View {
                 }
             }
             .onEnded { _ in
+                // Explicit final clamp so the character can't be left resting
+                // below the floor plane even if something upstream produced
+                // an out-of-range value during the drag.
+                if let id = sceneState.selectedHumanID,
+                   let current = sceneState.humans.first(where: { $0.id == id })?.position {
+                    sceneState.updateHumanPosition(id: id, position: current)
+                }
                 lastDragTranslation = .zero
                 dragStartPosition = nil
             }

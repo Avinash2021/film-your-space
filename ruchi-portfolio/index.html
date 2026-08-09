@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruchi — Product Designer</title>
+<meta name="description" content="Ruchi is a product designer working across fintech, edtech and Web3 — turning dense, complicated requirements into interfaces people actually understand.">
+
+<meta property="og:title" content="Ruchi — Product Designer">
+<meta property="og:description" content="Product designer across fintech, edtech and Web3. Design systems, 0→1 products, and research-led interfaces.">
+<meta property="og:type" content="website">
+
+<!-- Favicon: a simple monogram, no external file needed -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23141210'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='36' fill='%23FF5B2E' text-anchor='middle'%3ER%3C/text%3E%3C/svg%3E">
+
+<!-- Fonts: Fraunces for editorial display, Plus Jakarta Sans for body, IBM Plex Mono for labels -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ======================================================
+     FLOATING PILL NAV
+     Stays centred at the top, condenses on scroll.
+     ====================================================== -->
+<header class="nav" id="top">
+  <a class="nav-mark" href="#top" aria-label="Ruchi — home">
+    <span class="nav-dot" aria-hidden="true"></span> Ruchi
+  </a>
+
+  <nav class="nav-links" aria-label="Primary">
+    <a href="#work">Work</a>
+    <a href="#about">About</a>
+    <a href="#experience">Experience</a>
+    <a href="#playground">Playground</a>
+  </nav>
+
+  <a class="nav-cta" href="#contact">Let's talk</a>
+</header>
+
+<!-- thin scroll progress line pinned to the very top of the viewport -->
+<div class="progress" id="progress" role="presentation"></div>
+
+<main id="main">
+
+  <!-- ======================================================
+       HERO
+       ====================================================== -->
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="badge"><span class="badge-pulse" aria-hidden="true"></span> Open to product design roles — 2026</p>
+
+      <h1 class="hero-title">
+        Designing the moment a<br class="lb">
+        complicated product <em>finally</em><br class="lb">
+        makes sense.
+      </h1>
+
+      <p class="hero-sub">
+        I'm Ruchi — a product designer working across fintech, edtech and Web3.
+        I take dense banking requirements, founder napkin-sketches and half-formed
+        briefs, and turn them into interfaces people can actually use. Right now
+        I'm building the design system behind a regional bank's entire product suite.
+      </p>
+
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#work">View my work <span aria-hidden="true">↓</span></a>
+        <a class="btn btn-ghost" href="assets/resume/Ruchi_resume_2026.pdf" download>Résumé</a>
+      </div>
+
+      <!--
+        TODO (Ruchi): replace the href="#" values below with your real profiles.
+        e.g. https://www.linkedin.com/in/your-handle
+      -->
+      <ul class="hero-social">
+        <li><a href="mailto:ruchifigma@gmail.com">Email</a></li>
+        <li><a href="#" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="#" target="_blank" rel="noopener">Behance</a></li>
+        <li><a href="#" target="_blank" rel="noopener">Dribbble</a></li>
+      </ul>
+    </div>
+
+    <aside class="hero-card">
+      <!--
+        TODO (Ruchi): drop a square photo at assets/images/ruchi.jpg and
+        swap the .hero-photo div below for:
+        <img class="hero-photo" src="assets/images/ruchi.jpg" alt="Ruchi">
+      -->
+      <div class="hero-photo" role="img" aria-label="Portrait of Ruchi">
+        <span class="hero-photo-mono">R</span>
+      </div>
+
+      <dl class="hero-facts">
+        <div><dt>Based in</dt><dd>Bengaluru, India · Remote</dd></div>
+        <div><dt>Focus</dt><dd>Fintech · Edtech · Web3</dd></div>
+        <div><dt>Doing</dt><dd>Design systems &amp; 0→1 products</dd></div>
+      </dl>
+    </aside>
+  </section>
+
+  <!-- ======================================================
+       MARQUEE — the specialisms, on a slow loop.
+       ====================================================== -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Design Systems</span><span>✳</span>
+      <span>UX Research</span><span>✳</span>
+      <span>0 → 1 Products</span><span>✳</span>
+      <span>Information Architecture</span><span>✳</span>
+      <span>Prototyping</span><span>✳</span>
+      <span>Accessibility</span><span>✳</span>
+      <span>Design Systems</span><span>✳</span>
+      <span>UX Research</span><span>✳</span>
+      <span>0 → 1 Products</span><span>✳</span>
+      <span>Information Architecture</span><span>✳</span>
+      <span>Prototyping</span><span>✳</span>
+      <span>Accessibility</span><span>✳</span>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       STATS STRIP
+       ====================================================== -->
+  <section class="stats">
+    <div class="stat"><span class="stat-num">5</span><span class="stat-label">product teams designed for since 2024</span></div>
+    <div class="stat"><span class="stat-num">5,000<em>+</em></span><span class="stat-label">waitlist users at Kharch</span></div>
+    <div class="stat"><span class="stat-num">200<em>+</em></span><span class="stat-label">early users onboarded at Vichaar</span></div>
+    <div class="stat"><span class="stat-num">3</span><span class="stat-label">founding-designer roles shipped from blank canvas</span></div>
+  </section>
+
+  <!-- ======================================================
+       SELECTED WORK — cards generated from js/projects-data.js
+       ====================================================== -->
+  <section class="section work" id="work">
+    <div class="section-head">
+      <p class="eyebrow">Selected work</p>
+      <h2 class="section-title">Case studies</h2>
+      <p class="section-sub">
+        Five products, one recurring habit: find what's actually confusing, then remove it.
+      </p>
+    </div>
+
+    <div class="work-grid" id="work-grid">
+      <!-- Cards injected by js/script.js from js/projects-data.js -->
+    </div>
+  </section>
+
+  <!-- ======================================================
+       PROCESS
+       ====================================================== -->
+  <section class="section process" id="process">
+    <div class="section-head">
+      <p class="eyebrow">How I work</p>
+      <h2 class="section-title">Four steps, every time</h2>
+    </div>
+
+    <ol class="process-grid">
+      <li class="process-card">
+        <span class="process-num">01</span>
+        <h3>Understand</h3>
+        <p>Sit with stakeholders, read the requirements nobody wants to read, and find the real question hiding under the brief.</p>
+      </li>
+      <li class="process-card">
+        <span class="process-num">02</span>
+        <h3>Research</h3>
+        <p>Talk to the people who'll use it. Map journeys, audit competitors, and separate what users say from what they do.</p>
+      </li>
+      <li class="process-card">
+        <span class="process-num">03</span>
+        <h3>Design</h3>
+        <p>Flows, wireframes, then high-fidelity UI on a system that scales — components and patterns, not one-off screens.</p>
+      </li>
+      <li class="process-card">
+        <span class="process-num">04</span>
+        <h3>Ship &amp; refine</h3>
+        <p>Pair with engineering through build, watch what breaks in the real world, and iterate on evidence rather than taste.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ======================================================
+       ABOUT
+       ====================================================== -->
+  <section class="section about" id="about">
+    <div class="about-grid">
+      <div class="about-text">
+        <p class="eyebrow">About me</p>
+        <h2 class="section-title">A designer who reads the<br class="lb">requirements doc.</h2>
+
+        <p class="lede">
+          My practice sits between research and craft — reading a messy set of
+          requirements, finding the shape of the actual problem, and building an
+          interface that carries it without friction. I work in Figma, think in
+          flows, and I'm comfortable being the first (and sometimes only) designer
+          in the room.
+        </p>
+        <p class="lede">
+          Before design I studied international finance, which turns out to be very
+          useful when the product is a bank. Off the clock I train in Kathak — a
+          classical Indian dance built entirely on counted rhythm — write poetry,
+          play ukulele, and photograph whatever plant life I can find nearby.
+        </p>
+
+        <div class="tool-cloud">
+          <span class="chip">Figma</span>
+          <span class="chip">Framer</span>
+          <span class="chip">Balsamiq</span>
+          <span class="chip">Adobe Illustrator</span>
+          <span class="chip">Wireframing</span>
+          <span class="chip">Prototyping</span>
+          <span class="chip">User Flows</span>
+          <span class="chip">Journey Mapping</span>
+          <span class="chip">Competitive Analysis</span>
+          <span class="chip">Information Architecture</span>
+        </div>
+      </div>
+
+      <div class="about-side">
+        <div class="side-card">
+          <h3>Education</h3>
+          <div class="side-item">
+            <p class="side-title">10k Designers — Cohort 8</p>
+            <p class="side-detail">UI Design · UX Research · Design Thinking</p>
+            <p class="side-meta">Jan 2024 – May 2024 · Remote</p>
+          </div>
+          <div class="side-item">
+            <p class="side-title">Christ University, Bangalore</p>
+            <p class="side-detail">MCom, International Finance</p>
+            <p class="side-meta">2022 – 2023</p>
+          </div>
+        </div>
+
+        <div class="side-card side-card-accent">
+          <h3>Currently</h3>
+          <p class="side-detail">
+            Leading the design system for Mashreq Bank at Gloify — components,
+            patterns and accessibility standards for the whole product suite.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================
+       EXPERIENCE — timeline, roles from the résumé
+       ====================================================== -->
+  <section class="section experience" id="experience">
+    <div class="section-head">
+      <p class="eyebrow">Experience</p>
+      <h2 class="section-title">Where the work happened</h2>
+    </div>
+
+    <ol class="timeline">
+      <li class="timeline-item">
+        <div class="tl-when"><span class="tl-year">2025 — Present</span><span class="tl-loc">Remote</span></div>
+        <div class="tl-body">
+          <h3>Product Designer <span class="tl-co">Gloify</span></h3>
+          <ul>
+            <li>Leading end-to-end design of a design system for Mashreq Bank — consistent, scalable and accessible across the whole product suite.</li>
+            <li>Working across several product verticals at once without losing design coherence.</li>
+            <li>Sitting directly with stakeholders and clients to gather requirements and defend design decisions.</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="timeline-item">
+        <div class="tl-when"><span class="tl-year">Jan 2025 — Oct 2025</span><span class="tl-loc">Remote</span></div>
+        <div class="tl-body">
+          <h3>Founding Product Designer <span class="tl-co">Kalppo</span></h3>
+          <ul>
+            <li>Designed the entire platform end-to-end for students navigating international education.</li>
+            <li>Built an interface that makes dense, high-stakes information easy to scan and act on.</li>
+            <li>Shipped personalised mentorship matching and progress tracking.</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="timeline-item">
+        <div class="tl-when"><span class="tl-year">Jan 2024 — Dec 2024</span><span class="tl-loc">Remote</span></div>
+        <div class="tl-body">
+          <h3>Product Designer <span class="tl-co">Techolution</span></h3>
+          <ul>
+            <li>Partnered with engineering to ship an emotion-detection feature that reads and responds to user sentiment.</li>
+            <li>Led UX research and design for an AI-powered application, start to finish.</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="timeline-item">
+        <div class="tl-when"><span class="tl-year">Mar 2024 — Jul 2024</span><span class="tl-loc">Bengaluru, India</span></div>
+        <div class="tl-body">
+          <h3>Product Designer, Freelance <span class="tl-co">Vichaar</span></h3>
+          <ul>
+            <li>Designed a Web3 information hub covering articles, news and a community finder.</li>
+            <li>Worked directly with the PM to shape the MVP through fast, iterative design.</li>
+            <li>Helped bring in 200+ early users at launch.</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="timeline-item">
+        <div class="tl-when"><span class="tl-year">Feb 2024 — Jul 2024</span><span class="tl-loc">Bengaluru, India</span></div>
+        <div class="tl-body">
+          <h3>Founding Product Designer, Freelance <span class="tl-co">Kharch</span></h3>
+          <ul>
+            <li>Designed a personal finance and expense-tracking app from the ground up.</li>
+            <li>Ran user research into how Indian adults actually manage money day to day.</li>
+            <li>Built a minimal interface aligned to the founder's vision — contributed to pre-seed funding and a 5,000-user waitlist.</li>
+          </ul>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ======================================================
+       TESTIMONIALS — rendered from js/projects-data.js (TESTIMONIALS)
+       ====================================================== -->
+  <section class="section testimonials" id="testimonials">
+    <div class="section-head">
+      <p class="eyebrow">Kind words</p>
+      <h2 class="section-title">What people I've worked with say</h2>
+    </div>
+
+    <div class="quote-grid" id="quote-grid">
+      <!-- Cards injected by js/script.js -->
+    </div>
+  </section>
+
+  <!-- ======================================================
+       PLAYGROUND — the non-work side, kept light
+       ====================================================== -->
+  <section class="section playground" id="playground">
+    <div class="section-head">
+      <p class="eyebrow">Playground</p>
+      <h2 class="section-title">Off the clock</h2>
+      <p class="section-sub">The things that keep the eye trained when I'm not in Figma.</p>
+    </div>
+
+    <ul class="play-grid">
+      <li class="play-card"><span class="play-icon" aria-hidden="true">◍</span><h3>Kathak</h3><p>Classical Indian dance — 16 counted beats per cycle. Rhythm is just a design system with better shoes.</p></li>
+      <li class="play-card"><span class="play-icon" aria-hidden="true">✎</span><h3>Poetry</h3><p>Writing short, cutting the adjectives, writing it again. Roughly the same job as copy in a UI.</p></li>
+      <li class="play-card"><span class="play-icon" aria-hidden="true">♪</span><h3>Ukulele</h3><p>Four strings, low stakes, high joy.</p></li>
+      <li class="play-card"><span class="play-icon" aria-hidden="true">❋</span><h3>Plant photography</h3><p>Every leaf nearby, photographed at least once.</p></li>
+    </ul>
+  </section>
+
+  <!-- ======================================================
+       CONTACT
+       ====================================================== -->
+  <section class="contact" id="contact">
+    <div class="contact-inner">
+      <p class="badge badge-light"><span class="badge-pulse" aria-hidden="true"></span> Available for new projects</p>
+
+      <h2 class="contact-title">Building something that needs<br class="lb">a design instinct in the room?</h2>
+      <p class="contact-sub">Open to product design roles and select freelance work. I reply to everything.</p>
+
+      <a class="contact-mail" href="mailto:ruchifigma@gmail.com">ruchifigma@gmail.com</a>
+
+      <div class="contact-row">
+        <a class="pill" href="tel:+916360876431">+91 63608 76431</a>
+        <!-- TODO (Ruchi): swap these href="#" values for your real profile URLs -->
+        <a class="pill" href="#" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a class="pill" href="#" target="_blank" rel="noopener">Behance ↗</a>
+        <a class="pill" href="assets/resume/Ruchi_resume_2026.pdf" download>Résumé ↓</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>© 2026 Ruchi. Designed &amp; built by hand.</p>
+  <a href="#top">Back to top ↑</a>
+</footer>
+
+<script src="js/projects-data.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
